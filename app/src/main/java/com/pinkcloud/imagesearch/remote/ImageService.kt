@@ -11,5 +11,5 @@ interface ImageService {
         @Query("query") search: String = "android",
         @Query("page") page: Int = 1,
         @Query("size") size: Int = 80
-    ): Response<ImageResponse>
+    ): ImageResponse
 }

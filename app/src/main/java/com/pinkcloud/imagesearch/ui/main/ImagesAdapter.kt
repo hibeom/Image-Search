@@ -1,0 +1,49 @@
+package com.pinkcloud.imagesearch.ui.main
+
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.paging.PagingDataAdapter
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
+import com.pinkcloud.imagesearch.data.Image
+import com.pinkcloud.imagesearch.databinding.ListItemImageBinding
+
+class ImagesAdapter : PagingDataAdapter<Image, ImagesAdapter.ViewHolder>(ImageDiffCallback()) {
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val image = getItem(position)
+        image?.let {
+            holder.bind(it)
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        return ViewHolder.from(parent)
+    }
+
+    class ViewHolder(private val binding: ListItemImageBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(image: Image) {
+            binding.image = image
+        }
+
+        companion object {
+            fun from(parent: ViewGroup): ViewHolder {
+                val layoutInflater = LayoutInflater.from(parent.context)
+                val binding = ListItemImageBinding.inflate(layoutInflater, parent, false)
+                return ViewHolder(binding)
+            }
+        }
+    }
+}
+
+class ImageDiffCallback : DiffUtil.ItemCallback<Image>() {
+    override fun areItemsTheSame(oldItem: Image, newItem: Image): Boolean {
+        return oldItem.id == newItem.id
+    }
+
+    override fun areContentsTheSame(oldItem: Image, newItem: Image): Boolean {
+        return oldItem == newItem
+    }
+}

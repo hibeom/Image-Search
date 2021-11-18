@@ -18,6 +18,8 @@ import javax.inject.Singleton
 object RemoteModule {
 
     private const val BASE_URL = "https://dapi.kakao.com/"
+    //TODO hide rest api key
+    private const val REST_API_KEY = "ad14f62d0655324c01f9e72ee5bc9335"
 
     @Singleton
     @Provides
@@ -25,6 +27,13 @@ object RemoteModule {
         return OkHttpClient.Builder()
             .readTimeout(10, TimeUnit.SECONDS)
             .connectTimeout(10, TimeUnit.SECONDS)
+            .addInterceptor { chain ->
+                val request = chain.request()
+                    .newBuilder()
+                    .addHeader("Authorization", "KakaoAK $REST_API_KEY")
+                    .build()
+                chain.proceed(request)
+            }
             .build()
     }
 

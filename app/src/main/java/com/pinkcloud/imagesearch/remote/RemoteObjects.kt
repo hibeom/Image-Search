@@ -1,5 +1,6 @@
 package com.pinkcloud.imagesearch.remote
 
+import com.pinkcloud.imagesearch.data.Image
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
@@ -29,3 +30,13 @@ data class Document(
     val width: Int,
     val height: Int
 )
+
+fun Document.asImage(id: String): Image {
+    return Image(
+        id = id,
+        collection = collection,
+        thumbnailUrl = thumbnailUrl,
+        width = width,
+        height = height
+    )
+}
