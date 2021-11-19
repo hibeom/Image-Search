@@ -14,8 +14,12 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.window.layout.WindowMetrics
+import androidx.window.layout.WindowMetricsCalculator
 import com.pinkcloud.imagesearch.databinding.MainFragmentBinding
+import com.pinkcloud.imagesearch.util.calculateSpanCount
 import com.pinkcloud.imagesearch.util.hideKeyboard
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -81,6 +85,8 @@ class MainFragment : Fragment() {
     private fun setImages() {
         val adapter = ImagesAdapter()
         binding.recyclerView.apply {
+            val spanCount = calculateSpanCount(requireActivity())
+            layoutManager = GridLayoutManager(requireContext(), spanCount)
             // TODO footer not on grid layout OR show only progress bar and others on toast
             this.adapter = adapter.withLoadStateFooter(
                 footer = ImageLoadStateAdapter { adapter.retry() }
