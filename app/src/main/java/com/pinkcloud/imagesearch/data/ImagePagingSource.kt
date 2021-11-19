@@ -2,7 +2,6 @@ package com.pinkcloud.imagesearch.data
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.pinkcloud.imagesearch.remote.Document
 import com.pinkcloud.imagesearch.remote.ImageService
 import com.pinkcloud.imagesearch.remote.asImage
 import retrofit2.HttpException
@@ -30,7 +29,7 @@ class ImagePagingSource(
                 val id = "${query}_${position}_$index"
                 document.asImage(id)
             }
-            val nextKey = if (images.isEmpty()) {
+            val nextKey = if (response.meta.isEnd || images.isEmpty()) {
                 null
             } else {
                 // initial load size = 3 * NETWORK_PAGE_SIZE

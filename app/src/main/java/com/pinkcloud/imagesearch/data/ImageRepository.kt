@@ -15,7 +15,11 @@ class ImageRepository @Inject constructor(
 
     fun getSearchResultStream(query: String): Flow<PagingData<Image>> {
         return Pager(
-            config = PagingConfig(pageSize = PAGE_SIZE, enablePlaceholders = false),
+            config = PagingConfig(
+                pageSize = PAGE_SIZE,
+                enablePlaceholders = false,
+                initialLoadSize = PAGE_SIZE
+            ),
             pagingSourceFactory = { ImagePagingSource(service, query) }
         ).flow
     }

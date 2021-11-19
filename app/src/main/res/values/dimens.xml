@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="filter_text_width">150dp</dimen>
+    <dimen name="margin_recycler_view">16dp</dimen>
+    <dimen name="margin_text_input">8dp</dimen>
+    <dimen name="margin_button">8dp</dimen>
+</resources>
