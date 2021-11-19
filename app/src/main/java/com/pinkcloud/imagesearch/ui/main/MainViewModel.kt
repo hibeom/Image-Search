@@ -27,7 +27,7 @@ class MainViewModel @Inject constructor(
 
     val pagingDataFlow: Flow<PagingData<Image>>
 
-    val filterSet = MutableLiveData(mutableSetOf(DEFAULT_FILTER))
+    val filterList = MutableLiveData(mutableListOf(DEFAULT_FILTER))
 
     init {
         val initialSearch: String = savedStateHandle.get(LAST_SEARCH) ?: DEFAULT_SEARCH
@@ -38,11 +38,10 @@ class MainViewModel @Inject constructor(
             }
             .cachedIn(viewModelScope)
 
-        // TODO set coroutine context
         pagingDataFlow = filterFlow.flatMapLatest { filter ->
             originPagingData.map { pagingData ->
                 pagingData.filter { image ->
-                    setFilterSet(image.collection)
+                    updateFilterList(image.collection)
                     if (filter == DEFAULT_FILTER) true
                     else image.collection == filter
                 }
@@ -50,17 +49,23 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private suspend fun setFilterSet(collection: String) {
+    private suspend fun updateFilterList(collection: String) {
         withContext(Dispatchers.Default) {
-            if (!filterSet.value!!.contains(collection)) {
-                filterSet.value?.add(collection)
-                filterSet.postValue(filterSet.value)
+            if (!filterList.value!!.contains(collection)) {
+                filterList.value?.add(collection)
+                filterList.postValue(filterList.value)
             }
         }
     }
 
+    // TODO MVVM
     fun search(text: String) {
-        filterSet.value = mutableSetOf(DEFAULT_FILTER)
+        filterList.value?.also { filterList ->
+            filterList.clear()
+            filterList.add(DEFAULT_FILTER)
+        }.run {
+            filterList.value = this
+        }
         searchFlow.value = text
     }
 
@@ -77,4 +82,4 @@ class MainViewModel @Inject constructor(
 private const val LAST_SEARCH = "last_search"
 private const val LAST_FILTER = "last_filter"
 private const val DEFAULT_SEARCH = "Android"
-private const val DEFAULT_FILTER = "all"
+const val DEFAULT_FILTER = "all"

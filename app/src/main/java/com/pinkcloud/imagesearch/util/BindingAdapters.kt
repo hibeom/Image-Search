@@ -9,7 +9,7 @@ import com.pinkcloud.imagesearch.R
 fun setImage(imageView: ImageView, url: String) {
     Glide.with(imageView.context)
         .load(url)
-        .placeholder(R.drawable.ic_placeholder)
+        .placeholder(R.color.gray)
         .centerCrop()
         .into(imageView)
 }

@@ -14,6 +14,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
+import androidx.recyclerview.widget.RecyclerView
 import com.pinkcloud.imagesearch.databinding.MainFragmentBinding
 import com.pinkcloud.imagesearch.util.hideKeyboard
 import dagger.hilt.android.AndroidEntryPoint
@@ -80,7 +81,7 @@ class MainFragment : Fragment() {
     private fun setImages() {
         val adapter = ImagesAdapter()
         binding.recyclerView.apply {
-            // TODO footer not on grid layout
+            // TODO footer not on grid layout OR show only progress bar and others on toast
             this.adapter = adapter.withLoadStateFooter(
                 footer = ImageLoadStateAdapter { adapter.retry() }
             )
@@ -119,25 +120,34 @@ class MainFragment : Fragment() {
     }
 
     private fun setFilterSpinner() {
-        viewModel.filterSet.observe(this, { filterSet ->
-            ArrayAdapter(
-                requireContext(),
-                android.R.layout.simple_spinner_item,
-                filterSet.toList()
-            ).also { adapter ->
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                binding.filterSpinner.adapter = adapter
-            }
-        })
-        binding.filterSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parnet: AdapterView<*>?, p1: View?, pos: Int, p3: Long) {
-                val filter = parnet?.getItemAtPosition(pos) as String
-                viewModel.setFilter(filter)
-            }
-
-            override fun onNothingSelected(p0: AdapterView<*>?) {
-
-            }
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            viewModel.filterList.value!!
+        ).also { adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            binding.filterSpinner.adapter = adapter
         }
+
+        viewModel.filterList.observe(this, { filterSet ->
+            adapter.notifyDataSetChanged()
+        })
+
+        binding.filterSpinner.onItemSelectedListener = OnFilterSelectedListener(viewModel, binding.recyclerView)
+    }
+}
+
+class OnFilterSelectedListener(
+    private val viewModel: MainViewModel,
+    private val recyclerView: RecyclerView
+): AdapterView.OnItemSelectedListener {
+    override fun onItemSelected(parnet: AdapterView<*>?, p1: View?, pos: Int, p3: Long) {
+        val filter = parnet?.getItemAtPosition(pos) as String
+        viewModel.setFilter(filter)
+        recyclerView.scrollToPosition(0)
+    }
+
+    override fun onNothingSelected(p0: AdapterView<*>?) {
+
     }
 }
