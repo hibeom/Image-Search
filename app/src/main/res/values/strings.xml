@@ -2,4 +2,6 @@
     <string name="app_name">Image Search</string>
     <string name="search">Search</string>
     <string name="all">all</string>
+    <string name="retry">retry</string>
+    <string name="no_results">No Results</string>
 </resources>
