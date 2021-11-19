@@ -20,7 +20,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toLeftOf="@id/filter_text"
+            app:layout_constraintRight_toLeftOf="@id/filter_spinner"
             app:layout_constraintTop_toTopOf="parent"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_margin="@dimen/margin_text_input">
@@ -37,18 +37,13 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <Button
-            android:id="@+id/filter_text"
+        <Spinner
+            android:id="@+id/filter_spinner"
             android:layout_width="@dimen/filter_text_width"
             android:layout_height="0dp"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="@id/text_input_layout"
             app:layout_constraintBottom_toBottomOf="@id/text_input_layout"
-            android:drawableRight="@drawable/ic_filter"
-            android:gravity="center"
-            android:text="@{viewModel.filter}"
-            android:lines="1"
-            android:ellipsize="end"
             android:layout_marginRight="@dimen/margin_button"/>
 
         <androidx.recyclerview.widget.RecyclerView

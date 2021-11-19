@@ -1,6 +1,5 @@
 package com.pinkcloud.imagesearch.ui.main
 
-import android.content.Context
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.fragment.app.Fragment
@@ -8,20 +7,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
-import androidx.recyclerview.widget.DividerItemDecoration
 import com.pinkcloud.imagesearch.databinding.MainFragmentBinding
 import com.pinkcloud.imagesearch.util.hideKeyboard
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @AndroidEntryPoint
 class MainFragment : Fragment() {
@@ -43,6 +42,7 @@ class MainFragment : Fragment() {
 
         setSearchInputListener()
         setImages()
+        setFilterSpinner()
 
         return binding.root
     }
@@ -80,12 +80,6 @@ class MainFragment : Fragment() {
     private fun setImages() {
         val adapter = ImagesAdapter()
         binding.recyclerView.apply {
-            addItemDecoration(
-                DividerItemDecoration(context, DividerItemDecoration.HORIZONTAL)
-            )
-            addItemDecoration(
-                DividerItemDecoration(context, DividerItemDecoration.VERTICAL)
-            )
             // TODO footer not on grid layout
             this.adapter = adapter.withLoadStateFooter(
                 footer = ImageLoadStateAdapter { adapter.retry() }
@@ -124,5 +118,26 @@ class MainFragment : Fragment() {
         binding.retryButton.setOnClickListener { adapter.retry() }
     }
 
+    private fun setFilterSpinner() {
+        viewModel.filterSet.observe(this, { filterSet ->
+            ArrayAdapter(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                filterSet.toList()
+            ).also { adapter ->
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                binding.filterSpinner.adapter = adapter
+            }
+        })
+        binding.filterSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parnet: AdapterView<*>?, p1: View?, pos: Int, p3: Long) {
+                val filter = parnet?.getItemAtPosition(pos) as String
+                viewModel.setFilter(filter)
+            }
 
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+
+            }
+        }
+    }
 }
