@@ -13,7 +13,7 @@ interface ImageDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(images: List<Image>)
 
-    @Query("SELECT * FROM images ORDER BY id")
+    @Query("SELECT * FROM images")
     fun getImages(): PagingSource<Int, Image>
 
     @Query("DELETE FROM images")
