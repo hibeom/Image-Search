@@ -7,6 +7,7 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.signature.ObjectKey
 import com.pinkcloud.imagesearch.data.Image
 import com.pinkcloud.imagesearch.databinding.ListItemImageBinding
 import timber.log.Timber
@@ -45,12 +46,17 @@ class ImagesAdapter(
     }
 
     private fun preload(position: Int) {
-        var endPosition = position + spanCount * 3
+        var endPosition = position + spanCount * 5
         if (endPosition > itemCount) endPosition = itemCount
 
         for (i in position until endPosition) {
-            val url = getItem(i)?.thumbnailUrl
-            Glide.with(context).load(url).preload()
+            val image = getItem(i)
+            image?.run {
+                Glide.with(context)
+                    .load(thumbnailUrl)
+                    .signature(ObjectKey(datetime))
+                    .preload()
+            }
         }
     }
 }

@@ -1,19 +1,25 @@
 package com.pinkcloud.imagesearch.ui.main
 
+import android.app.Application
 import androidx.lifecycle.*
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
+import com.bumptech.glide.Glide
 import com.pinkcloud.imagesearch.data.Image
 import com.pinkcloud.imagesearch.data.ImageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
+    private val application: Application,
     private val repository: ImageRepository,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -28,6 +34,7 @@ class MainViewModel @Inject constructor(
     val filterList = MutableLiveData(mutableListOf(DEFAULT_FILTER))
 
     init {
+        clearImageCache() // can be improved with splashScreen
         val initialSearch: String = savedStateHandle.get(LAST_SEARCH) ?: DEFAULT_SEARCH
         searchFlow.value = initialSearch
         val originPagingData = searchFlow
@@ -72,6 +79,13 @@ class MainViewModel @Inject constructor(
 
     fun setFilter(filter: String) {
         filterFlow.value = filter
+    }
+
+    private fun clearImageCache() {
+        viewModelScope.launch(Dispatchers.IO) {
+            Glide.get(application).clearDiskCache()
+            Timber.d("cleared")
+        }
     }
 }
 

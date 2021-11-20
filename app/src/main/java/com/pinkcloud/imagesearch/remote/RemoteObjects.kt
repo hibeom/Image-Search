@@ -28,7 +28,8 @@ data class Document(
     @Json(name = "image_url")
     val imageUrl: String,
     val width: Int,
-    val height: Int
+    val height: Int,
+    val datetime: String
 )
 
 fun Document.asImage(id: String): Image {
@@ -37,6 +38,7 @@ fun Document.asImage(id: String): Image {
         collection = collection,
         thumbnailUrl = thumbnailUrl,
         width = width,
-        height = height
+        height = height,
+        datetime = datetime
     )
 }
