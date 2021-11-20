@@ -83,9 +83,9 @@ class MainFragment : Fragment() {
     }
 
     private fun setImages() {
-        val adapter = ImagesAdapter()
+        val spanCount = calculateSpanCount(requireActivity())
+        val adapter = ImagesAdapter(spanCount, requireContext())
         binding.recyclerView.apply {
-            val spanCount = calculateSpanCount(requireActivity())
             layoutManager = GridLayoutManager(requireContext(), spanCount)
             // TODO footer not on grid layout OR show only progress bar and others on toast
             this.adapter = adapter.withLoadStateFooter(

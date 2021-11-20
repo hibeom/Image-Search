@@ -1,20 +1,27 @@
 package com.pinkcloud.imagesearch.ui.main
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.pinkcloud.imagesearch.data.Image
 import com.pinkcloud.imagesearch.databinding.ListItemImageBinding
+import timber.log.Timber
 
-class ImagesAdapter : PagingDataAdapter<Image, ImagesAdapter.ViewHolder>(ImageDiffCallback()) {
+class ImagesAdapter(
+    private val spanCount: Int,
+    private val context: Context) :
+    PagingDataAdapter<Image, ImagesAdapter.ViewHolder>(ImageDiffCallback()) {
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val image = getItem(position)
         image?.let {
             holder.bind(it)
         }
+        preload(position)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -34,6 +41,16 @@ class ImagesAdapter : PagingDataAdapter<Image, ImagesAdapter.ViewHolder>(ImageDi
                 val binding = ListItemImageBinding.inflate(layoutInflater, parent, false)
                 return ViewHolder(binding)
             }
+        }
+    }
+
+    private fun preload(position: Int) {
+        var endPosition = position + spanCount * 3
+        if (endPosition > itemCount) endPosition = itemCount
+
+        for (i in position until endPosition) {
+            val url = getItem(i)?.thumbnailUrl
+            Glide.with(context).load(url).preload()
         }
     }
 }

@@ -18,7 +18,7 @@ class ImageRepository @Inject constructor(
             config = PagingConfig(
                 pageSize = PAGE_SIZE,
                 enablePlaceholders = false,
-                initialLoadSize = PAGE_SIZE
+                initialLoadSize = PAGE_SIZE * 2
             ),
             pagingSourceFactory = { ImagePagingSource(service, query) }
         ).flow

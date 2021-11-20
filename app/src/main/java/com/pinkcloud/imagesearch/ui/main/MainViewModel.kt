@@ -22,8 +22,6 @@ class MainViewModel @Inject constructor(
     val search: LiveData<String>
         get() = searchFlow.asLiveData()
     private val filterFlow = MutableStateFlow(DEFAULT_FILTER)
-    val filter: LiveData<String>
-        get() = filterFlow.asLiveData()
 
     val pagingDataFlow: Flow<PagingData<Image>>
 
@@ -60,11 +58,9 @@ class MainViewModel @Inject constructor(
 
     // TODO MVVM
     fun search(text: String) {
-        filterList.value?.also { filterList ->
+        filterList.value = filterList.value?.also { filterList ->
             filterList.clear()
             filterList.add(DEFAULT_FILTER)
-        }.run {
-            filterList.value = this
         }
         searchFlow.value = text
     }
