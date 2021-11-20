@@ -13,11 +13,10 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.window.layout.WindowMetrics
-import androidx.window.layout.WindowMetricsCalculator
 import com.pinkcloud.imagesearch.databinding.MainFragmentBinding
 import com.pinkcloud.imagesearch.util.calculateSpanCount
 import com.pinkcloud.imagesearch.util.hideKeyboard
@@ -25,7 +24,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @AndroidEntryPoint
 class MainFragment : Fragment() {
@@ -86,11 +84,11 @@ class MainFragment : Fragment() {
         val spanCount = calculateSpanCount(requireActivity())
         val adapter = ImagesAdapter(spanCount, requireContext())
         binding.recyclerView.apply {
-            layoutManager = GridLayoutManager(requireContext(), spanCount)
-            // TODO footer not on grid layout OR show only progress bar and others on toast
+            val footerAdapter = ImageLoadStateAdapter { adapter.retry() }
             this.adapter = adapter.withLoadStateFooter(
-                footer = ImageLoadStateAdapter { adapter.retry() }
+                footer = footerAdapter
             )
+            layoutManager = getGridLayoutManager(spanCount, adapter, footerAdapter)
         }
 
         lifecycleScope.launch {
@@ -102,27 +100,48 @@ class MainFragment : Fragment() {
 
         lifecycleScope.launch {
             adapter.loadStateFlow.collect { loadState ->
-                val isListEmpty = loadState.refresh is LoadState.NotLoading && adapter.itemCount == 0
+                val isListEmpty =
+                    loadState.refresh is LoadState.NotLoading && adapter.itemCount == 0
                 binding.textEmpty.isVisible = isListEmpty
                 binding.recyclerView.isVisible = !isListEmpty
 
                 binding.loadingBar.isVisible = loadState.source.refresh is LoadState.Loading
                 binding.retryButton.isVisible = loadState.source.refresh is LoadState.Error
+                if (loadState.source.refresh is LoadState.Error) binding.recyclerView.isVisible = false
 
-                val errorState = loadState.source.append as? LoadState.Error
-                    ?: loadState.source.prepend as? LoadState.Error
-                    ?: loadState.append as? LoadState.Error
-                    ?: loadState.prepend as? LoadState.Error
-                errorState?.let {
-                    Toast.makeText(
-                        requireContext(),
-                        "\uD83D\uDE28 Wooops ${it.error}",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
+                showErrorToast(loadState)
             }
         }
         binding.retryButton.setOnClickListener { adapter.retry() }
+    }
+
+    private fun showErrorToast(loadState: CombinedLoadStates) {
+        val errorState = loadState.source.append as? LoadState.Error
+            ?: loadState.source.prepend as? LoadState.Error
+            ?: loadState.append as? LoadState.Error
+            ?: loadState.prepend as? LoadState.Error
+        errorState?.let {
+            Toast.makeText(
+                requireContext(),
+                "\uD83D\uDE28 ${it.error}",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    private fun getGridLayoutManager(
+        spanCount: Int,
+        adapter: ImagesAdapter,
+        footerAdapter: ImageLoadStateAdapter
+    ): GridLayoutManager {
+        val gridLayoutManager = GridLayoutManager(requireContext(), spanCount)
+        gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int {
+                return if (position == adapter.itemCount && footerAdapter.itemCount > 0) spanCount
+                else 1
+            }
+        }
+        return gridLayoutManager
     }
 
     private fun setFilterSpinner() {
@@ -139,14 +158,15 @@ class MainFragment : Fragment() {
             adapter.notifyDataSetChanged()
         })
 
-        binding.filterSpinner.onItemSelectedListener = OnFilterSelectedListener(viewModel, binding.recyclerView)
+        binding.filterSpinner.onItemSelectedListener =
+            OnFilterSelectedListener(viewModel, binding.recyclerView)
     }
 }
 
 class OnFilterSelectedListener(
     private val viewModel: MainViewModel,
     private val recyclerView: RecyclerView
-): AdapterView.OnItemSelectedListener {
+) : AdapterView.OnItemSelectedListener {
     override fun onItemSelected(parnet: AdapterView<*>?, p1: View?, pos: Int, p3: Long) {
         val filter = parnet?.getItemAtPosition(pos) as String
         viewModel.setFilter(filter)
