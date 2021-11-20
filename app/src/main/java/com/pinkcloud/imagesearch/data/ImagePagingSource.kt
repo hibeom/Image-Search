@@ -8,7 +8,6 @@ import retrofit2.HttpException
 import java.io.IOException
 
 private const val START_PAGE_INDEX = 1
-const val PAGE_SIZE = 80
 
 class ImagePagingSource(
     private val service: ImageService,
@@ -32,8 +31,6 @@ class ImagePagingSource(
             val nextKey = if (response.meta.isEnd || images.isEmpty()) {
                 null
             } else {
-                // initial load size = 3 * NETWORK_PAGE_SIZE
-                // ensure we're not requesting duplicating items, at the 2nd request
                 position + (params.loadSize / PAGE_SIZE)
             }
             LoadResult.Page(

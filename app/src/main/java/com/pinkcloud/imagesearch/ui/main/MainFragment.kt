@@ -16,8 +16,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.window.layout.WindowMetrics
-import androidx.window.layout.WindowMetricsCalculator
 import com.pinkcloud.imagesearch.databinding.MainFragmentBinding
 import com.pinkcloud.imagesearch.util.calculateSpanCount
 import com.pinkcloud.imagesearch.util.hideKeyboard
@@ -25,7 +23,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @AndroidEntryPoint
 class MainFragment : Fragment() {

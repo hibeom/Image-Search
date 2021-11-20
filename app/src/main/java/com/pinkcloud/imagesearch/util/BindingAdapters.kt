@@ -7,6 +7,7 @@ import com.pinkcloud.imagesearch.R
 
 @BindingAdapter("imageUrl")
 fun setImage(imageView: ImageView, url: String) {
+    // TODO add signature
     Glide.with(imageView.context)
         .load(url)
         .placeholder(R.color.gray)

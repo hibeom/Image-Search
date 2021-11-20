@@ -6,6 +6,7 @@ import retrofit2.http.Query
 
 interface ImageService {
 
+    // Retrofit's Coroutine CallAdapter dispatches on a worker thread.
     @GET("v2/search/image")
     suspend fun getImages(
         @Query("query") search: String = "android",
