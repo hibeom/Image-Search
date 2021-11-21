@@ -1,5 +1,6 @@
 package com.pinkcloud.imagesearch.di
 
+import com.pinkcloud.imagesearch.BuildConfig
 import com.pinkcloud.imagesearch.remote.ImageService
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -18,8 +19,6 @@ import javax.inject.Singleton
 object RemoteModule {
 
     private const val BASE_URL = "https://dapi.kakao.com/"
-    //TODO hide rest api key
-    private const val REST_API_KEY = "ad14f62d0655324c01f9e72ee5bc9335"
 
     @Singleton
     @Provides
@@ -30,7 +29,7 @@ object RemoteModule {
             .addInterceptor { chain ->
                 val request = chain.request()
                     .newBuilder()
-                    .addHeader("Authorization", "KakaoAK $REST_API_KEY")
+                    .addHeader("Authorization", "KakaoAK ${BuildConfig.REST_API_KEY}")
                     .build()
                 chain.proceed(request)
             }

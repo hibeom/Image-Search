@@ -46,7 +46,7 @@ class ImagesAdapter(
     }
 
     private fun preload(position: Int) {
-        var endPosition = position + spanCount * 5
+        var endPosition = position + spanCount * 8
         if (endPosition > itemCount) endPosition = itemCount
 
         for (i in position until endPosition) {
