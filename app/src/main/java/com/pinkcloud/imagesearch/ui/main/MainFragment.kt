@@ -12,7 +12,9 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
@@ -24,6 +26,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @AndroidEntryPoint
 class MainFragment : Fragment() {
@@ -92,24 +95,28 @@ class MainFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            viewModel.pagingDataFlow
-                .collectLatest { pagingData ->
-                    adapter.submitData(pagingData)
-                }
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.pagingDataFlow
+                    .collectLatest { pagingData ->
+                        adapter.submitData(pagingData)
+                    }
+            }
         }
 
         lifecycleScope.launch {
-            adapter.loadStateFlow.collect { loadState ->
-                val isListEmpty =
-                    loadState.refresh is LoadState.NotLoading && adapter.itemCount == 0
-                binding.textEmpty.isVisible = isListEmpty
-                binding.recyclerView.isVisible = !isListEmpty
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                adapter.loadStateFlow.collect { loadState ->
+                    val isListEmpty =
+                        loadState.refresh is LoadState.NotLoading && adapter.itemCount == 0
+                    binding.textEmpty.isVisible = isListEmpty
+                    binding.recyclerView.isVisible = !isListEmpty
 
-                binding.loadingBar.isVisible = loadState.source.refresh is LoadState.Loading
-                binding.retryButton.isVisible = loadState.source.refresh is LoadState.Error
-                if (loadState.source.refresh is LoadState.Error) binding.recyclerView.isVisible = false
+                    binding.loadingBar.isVisible = loadState.source.refresh is LoadState.Loading
+                    binding.retryButton.isVisible = loadState.source.refresh is LoadState.Error
+                    if (loadState.source.refresh is LoadState.Error) binding.recyclerView.isVisible = false
 
-                showErrorToast(loadState)
+                    showErrorToast(loadState)
+                }
             }
         }
         binding.retryButton.setOnClickListener { adapter.retry() }

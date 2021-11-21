@@ -22,10 +22,8 @@ class MainViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val searchFlow = MutableStateFlow(DEFAULT_SEARCH)
-    val search: LiveData<String>
-        get() = searchFlow.asLiveData()
-    private val filterFlow = MutableStateFlow(DEFAULT_FILTER)
+    val searchState = MutableStateFlow(DEFAULT_SEARCH)
+    private val filterState = MutableStateFlow(DEFAULT_FILTER)
 
     val pagingDataFlow: Flow<PagingData<Image>>
 
@@ -34,14 +32,14 @@ class MainViewModel @Inject constructor(
     init {
         clearImageCache()
         val initialSearch: String = savedStateHandle.get(LAST_SEARCH) ?: DEFAULT_SEARCH
-        searchFlow.value = initialSearch
-        val originPagingData = searchFlow
+        searchState.value = initialSearch
+        val originPagingData = searchState
             .flatMapLatest { query ->
                 repository.getSearchResultStream(query)
             }
             .cachedIn(viewModelScope)
 
-        pagingDataFlow = filterFlow.flatMapLatest { filter ->
+        pagingDataFlow = filterState.flatMapLatest { filter ->
             originPagingData.map { pagingData ->
                 pagingData.filter { image ->
                     updateFilterList(image.collection)
@@ -68,16 +66,16 @@ class MainViewModel @Inject constructor(
             filterList.clear()
             filterList.add(DEFAULT_FILTER)
         }
-        searchFlow.value = text
+        searchState.value = text
     }
 
     override fun onCleared() {
-        savedStateHandle[LAST_SEARCH] = searchFlow.value
+        savedStateHandle[LAST_SEARCH] = searchState.value
         super.onCleared()
     }
 
     fun setFilter(filter: String) {
-        filterFlow.value = filter
+        filterState.value = filter
     }
 
     private fun clearImageCache() {
@@ -88,6 +86,5 @@ class MainViewModel @Inject constructor(
 }
 
 private const val LAST_SEARCH = "last_search"
-private const val LAST_FILTER = "last_filter"
 private const val DEFAULT_SEARCH = "Android"
 const val DEFAULT_FILTER = "all"
