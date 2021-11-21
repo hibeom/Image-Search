@@ -28,8 +28,7 @@ class ImageLoadStateAdapter(private val retry: () -> Unit): LoadStateAdapter<Ima
         }
 
         fun bind(loadState: LoadState) {
-            binding.progressBar.isVisible = loadState is LoadState.Loading
-            binding.retryButton.isVisible = loadState is LoadState.Error
+            binding.loadState = loadState
         }
 
         companion object {

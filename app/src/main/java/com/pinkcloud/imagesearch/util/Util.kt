@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.window.layout.WindowMetricsCalculator
 import kotlin.math.roundToInt
 
-private const val THUMBNAIL_SIZE_IN_DP = 120
+private const val ROUGH_THUMBNAIL_SIZE = 120
 
 fun hideKeyboard(context: Context, v: View) {
     (context.getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager).apply {
@@ -26,5 +26,5 @@ fun calculateSpanCount(activity: Activity): Int {
             }
     val density = activity.resources.displayMetrics.density
     val widthDp = (widthPixel / density).roundToInt()
-    return widthDp / THUMBNAIL_SIZE_IN_DP
+    return widthDp / ROUGH_THUMBNAIL_SIZE
 }

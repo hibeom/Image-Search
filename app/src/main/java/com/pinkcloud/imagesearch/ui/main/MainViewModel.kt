@@ -32,7 +32,7 @@ class MainViewModel @Inject constructor(
     val filterList = MutableLiveData(mutableListOf(DEFAULT_FILTER))
 
     init {
-        clearImageCache() // can be improved with splashScreen
+        clearImageCache()
         val initialSearch: String = savedStateHandle.get(LAST_SEARCH) ?: DEFAULT_SEARCH
         searchFlow.value = initialSearch
         val originPagingData = searchFlow
@@ -63,7 +63,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    // TODO MVVM
     fun search(text: String) {
         filterList.value = filterList.value?.also { filterList ->
             filterList.clear()

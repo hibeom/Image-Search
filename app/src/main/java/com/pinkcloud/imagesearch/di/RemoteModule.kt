@@ -2,6 +2,9 @@ package com.pinkcloud.imagesearch.di
 
 import com.pinkcloud.imagesearch.BuildConfig
 import com.pinkcloud.imagesearch.remote.ImageService
+import com.pinkcloud.imagesearch.remote.ImageService.Companion.AUTHORIZATION_HEADER_NAME
+import com.pinkcloud.imagesearch.remote.ImageService.Companion.AUTHORIZATION_HEADER_VALUE
+import com.pinkcloud.imagesearch.remote.ImageService.Companion.BASE_URL
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
@@ -11,25 +14,20 @@ import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object RemoteModule {
 
-    private const val BASE_URL = "https://dapi.kakao.com/"
-
     @Singleton
     @Provides
     fun provideHttpClient(): OkHttpClient {
         return OkHttpClient.Builder()
-            .readTimeout(10, TimeUnit.SECONDS)
-            .connectTimeout(10, TimeUnit.SECONDS)
             .addInterceptor { chain ->
                 val request = chain.request()
                     .newBuilder()
-                    .addHeader("Authorization", "KakaoAK ${BuildConfig.REST_API_KEY}")
+                    .addHeader(AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE)
                     .build()
                 chain.proceed(request)
             }

@@ -37,8 +37,6 @@ fun Document.asImage(id: String): Image {
         id = id,
         collection = collection,
         thumbnailUrl = thumbnailUrl,
-        width = width,
-        height = height,
         datetime = datetime
     )
 }
