@@ -10,7 +10,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.signature.ObjectKey
 import com.pinkcloud.imagesearch.data.Image
 import com.pinkcloud.imagesearch.databinding.ListItemImageBinding
-import timber.log.Timber
 
 class ImagesAdapter(
     private val spanCount: Int,
@@ -54,7 +53,7 @@ class ImagesAdapter(
             image?.run {
                 Glide.with(context)
                     .load(thumbnailUrl)
-                    .signature(ObjectKey(datetime))
+                    .signature(ObjectKey(datetime ?: thumbnailUrl ?: id))
                     .preload()
             }
         }

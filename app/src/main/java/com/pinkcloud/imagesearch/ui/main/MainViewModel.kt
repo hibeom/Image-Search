@@ -10,11 +10,9 @@ import com.pinkcloud.imagesearch.data.Image
 import com.pinkcloud.imagesearch.data.ImageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -54,11 +52,13 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private suspend fun updateFilterList(collection: String) {
+    private suspend fun updateFilterList(collection: String?) {
         withContext(Dispatchers.Default) {
-            if (!filterList.value!!.contains(collection)) {
-                filterList.value?.add(collection)
-                filterList.postValue(filterList.value)
+            collection?.let {
+                if (!filterList.value!!.contains(collection)) {
+                    filterList.value?.add(collection)
+                    filterList.postValue(filterList.value)
+                }
             }
         }
     }
@@ -84,7 +84,6 @@ class MainViewModel @Inject constructor(
     private fun clearImageCache() {
         viewModelScope.launch(Dispatchers.IO) {
             Glide.get(application).clearDiskCache()
-            Timber.d("cleared")
         }
     }
 }

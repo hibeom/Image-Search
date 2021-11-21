@@ -4,8 +4,10 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.pinkcloud.imagesearch.remote.ImageService
 import com.pinkcloud.imagesearch.remote.asImage
+import com.squareup.moshi.JsonDataException
 import retrofit2.HttpException
 import java.io.IOException
+import java.lang.Exception
 
 private const val START_PAGE_INDEX = 1
 const val PAGE_SIZE = 40
@@ -42,6 +44,14 @@ class ImagePagingSource(
         } catch (exception: IOException) {
             LoadResult.Error(exception)
         } catch (exception: HttpException) {
+            LoadResult.Error(exception)
+        } catch (exception: JsonDataException) {
+            LoadResult.Page(
+                data = listOf(),
+                prevKey = if (position == START_PAGE_INDEX) null else position - 2,
+                nextKey = if (position >= 50) null else position + (params.loadSize / PAGE_SIZE)
+            )
+        } catch (exception: Exception) {
             LoadResult.Error(exception)
         }
     }

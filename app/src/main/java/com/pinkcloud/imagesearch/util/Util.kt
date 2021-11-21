@@ -6,7 +6,6 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.window.layout.WindowMetricsCalculator
-import timber.log.Timber
 import kotlin.math.roundToInt
 
 private const val THUMBNAIL_SIZE_IN_DP = 120

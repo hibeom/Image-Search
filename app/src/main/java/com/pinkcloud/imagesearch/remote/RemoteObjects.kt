@@ -22,14 +22,14 @@ data class Meta(
 
 @JsonClass(generateAdapter = true)
 data class Document(
-    val collection: String,
+    val collection: String?,
     @Json(name = "thumbnail_url")
-    val thumbnailUrl: String,
+    val thumbnailUrl: String?,
     @Json(name = "image_url")
-    val imageUrl: String,
-    val width: Int,
-    val height: Int,
-    val datetime: String
+    val imageUrl: String?,
+    val width: Int?,
+    val height: Int?,
+    val datetime: String?
 )
 
 fun Document.asImage(id: String): Image {

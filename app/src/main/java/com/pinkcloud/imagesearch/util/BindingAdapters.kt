@@ -5,13 +5,16 @@ import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.signature.ObjectKey
 import com.pinkcloud.imagesearch.R
+import com.pinkcloud.imagesearch.data.Image
 
-@BindingAdapter("imageUrl", "datetime")
-fun setImage(imageView: ImageView, url: String, datetime: String) {
-    Glide.with(imageView.context)
-        .load(url)
-        .placeholder(R.color.gray)
-        .centerCrop()
-        .signature(ObjectKey(datetime))
-        .into(imageView)
+@BindingAdapter("image")
+fun setImage(imageView: ImageView, image: Image) {
+    image.run {
+        Glide.with(imageView.context)
+            .load(thumbnailUrl)
+            .placeholder(R.color.gray)
+            .centerCrop()
+            .signature(ObjectKey(datetime ?: thumbnailUrl ?: id))
+            .into(imageView)
+    }
 }
