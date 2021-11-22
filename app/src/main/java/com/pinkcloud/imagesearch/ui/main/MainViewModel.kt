@@ -1,23 +1,25 @@
 package com.pinkcloud.imagesearch.ui.main
 
-import android.app.Application
-import androidx.lifecycle.*
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
-import com.bumptech.glide.Glide
 import com.pinkcloud.imagesearch.data.Image
 import com.pinkcloud.imagesearch.data.ImageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val application: Application,
     private val repository: ImageRepository,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -30,7 +32,6 @@ class MainViewModel @Inject constructor(
     val filterList = MutableLiveData(mutableListOf(DEFAULT_FILTER))
 
     init {
-        clearImageCache()
         val initialSearch: String = savedStateHandle.get(LAST_SEARCH) ?: DEFAULT_SEARCH
         searchState.value = initialSearch
         val originPagingData = searchState
@@ -76,12 +77,6 @@ class MainViewModel @Inject constructor(
 
     fun setFilter(filter: String) {
         filterState.value = filter
-    }
-
-    private fun clearImageCache() {
-        viewModelScope.launch(Dispatchers.IO) {
-            Glide.get(application).clearDiskCache()
-        }
     }
 }
 
