@@ -13,16 +13,20 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.pinkcloud.imagesearch.data.Image
 import com.pinkcloud.imagesearch.databinding.MainFragmentBinding
 import com.pinkcloud.imagesearch.util.calculateSpanCount
 import com.pinkcloud.imagesearch.util.hideKeyboard
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -45,25 +49,25 @@ class MainFragment : Fragment() {
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
 
-        setSearchInputListener()
-        setImages()
-        setFilterSpinner()
+        binding.setSearchInputListener()
+        binding.setImages(viewModel.pagingDataFlow)
+        binding.setFilterSpinner(viewModel.filterList)
 
         return binding.root
     }
 
-    private fun setSearchInputListener() {
-        binding.searchTextInput.apply {
+    private fun MainFragmentBinding.setSearchInputListener() {
+        searchTextInput.apply {
             setOnEditorActionListener { _, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_GO) {
                     hideKeyboard(context, this)
-                    updateImagesFromInput(text.toString())
+                    updateImagesFromInput(text.toString(), recyclerView)
                     true
                 } else false
             }
             setOnKeyListener { _, keyCode, keyEvent ->
                 if (keyEvent.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
-                    updateImagesFromInput(text.toString())
+                    updateImagesFromInput(text.toString(), recyclerView)
                     true
                 } else false
             }
@@ -73,19 +77,21 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun updateImagesFromInput(searchText: String) {
+    private fun updateImagesFromInput(searchText: String, recyclerView: RecyclerView) {
         searchText.trim().let {
             if (it.isNotEmpty()) {
-                binding.recyclerView.scrollToPosition(0)
+                recyclerView.scrollToPosition(0)
                 viewModel.search(searchText)
             }
         }
     }
 
-    private fun setImages() {
+    private fun MainFragmentBinding.setImages(
+        pagingDataFlow: Flow<PagingData<Image>>
+    ) {
         val spanCount = calculateSpanCount(requireActivity())
         val adapter = ImagesAdapter(spanCount, requireContext())
-        binding.recyclerView.apply {
+        recyclerView.apply {
             val footerAdapter = ImageLoadStateAdapter { adapter.retry() }
             this.adapter = adapter.withLoadStateFooter(
                 footer = footerAdapter
@@ -95,7 +101,7 @@ class MainFragment : Fragment() {
 
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.pagingDataFlow
+                pagingDataFlow
                     .collectLatest { pagingData ->
                         adapter.submitData(pagingData)
                     }
@@ -107,18 +113,18 @@ class MainFragment : Fragment() {
                 adapter.loadStateFlow.collect { loadState ->
                     val isListEmpty =
                         loadState.refresh is LoadState.NotLoading && adapter.itemCount == 0
-                    binding.textEmpty.isVisible = isListEmpty
-                    binding.recyclerView.isVisible = !isListEmpty
+                    textEmpty.isVisible = isListEmpty
+                    recyclerView.isVisible = !isListEmpty
 
-                    binding.loadingBar.isVisible = loadState.source.refresh is LoadState.Loading
-                    binding.retryButton.isVisible = loadState.source.refresh is LoadState.Error
-                    if (loadState.source.refresh is LoadState.Error) binding.recyclerView.isVisible = false
+                    loadingBar.isVisible = loadState.source.refresh is LoadState.Loading
+                    retryButton.isVisible = loadState.source.refresh is LoadState.Error
+                    if (loadState.source.refresh is LoadState.Error) recyclerView.isVisible = false
 
                     showErrorToast(loadState)
                 }
             }
         }
-        binding.retryButton.setOnClickListener { adapter.retry() }
+        retryButton.setOnClickListener { adapter.retry() }
     }
 
     private fun showErrorToast(loadState: CombinedLoadStates) {
@@ -152,22 +158,22 @@ class MainFragment : Fragment() {
         return gridLayoutManager
     }
 
-    private fun setFilterSpinner() {
+    private fun MainFragmentBinding.setFilterSpinner(filterList: LiveData<MutableList<String>>) {
         val adapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_spinner_item,
-            viewModel.filterList.value!!
+            filterList.value!!
         ).also { adapter ->
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            binding.filterSpinner.adapter = adapter
+            filterSpinner.adapter = adapter
         }
 
-        viewModel.filterList.observe(this, { filterSet ->
+        filterList.observe(this@MainFragment, {
             adapter.notifyDataSetChanged()
         })
 
-        binding.filterSpinner.onItemSelectedListener =
-            OnFilterSelectedListener(viewModel, binding.recyclerView)
+        filterSpinner.onItemSelectedListener =
+            OnFilterSelectedListener(this@MainFragment.viewModel, recyclerView)
     }
 }
 
