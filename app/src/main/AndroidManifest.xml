@@ -14,7 +14,6 @@
         android:theme="@style/Theme.ImageSearch">
         <activity
             android:name=".MainActivity"
-            android:theme="@style/Theme.ImageSearch.Splash"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

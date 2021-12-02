@@ -6,10 +6,9 @@ import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.signature.ObjectKey
 import com.pinkcloud.imagesearch.data.Image
 import com.pinkcloud.imagesearch.databinding.ListItemImageBinding
+import com.pinkcloud.imagesearch.util.ImageLoader
 
 class ImagesAdapter(
     private val spanCount: Int,
@@ -50,11 +49,9 @@ class ImagesAdapter(
 
         for (i in position until endPosition) {
             val image = getItem(i)
-            image?.run {
-                Glide.with(context)
-                    .load(thumbnailUrl)
-                    .signature(ObjectKey(datetime ?: thumbnailUrl ?: id))
-                    .preload()
+            // TODO run without global scope
+            image?.thumbnailUrl?.let { url ->
+                ImageLoader.preload(url)
             }
         }
     }
