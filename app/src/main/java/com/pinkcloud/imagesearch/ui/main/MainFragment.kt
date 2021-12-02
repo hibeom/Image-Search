@@ -2,7 +2,6 @@ package com.pinkcloud.imagesearch.ui.main
 
 import android.os.Bundle
 import android.view.KeyEvent
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,11 +10,9 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.*
 import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
 import androidx.paging.PagingData
@@ -98,9 +95,13 @@ class MainFragment : Fragment() {
             )
             layoutManager = getGridLayoutManager(spanCount, adapter, footerAdapter)
         }
+        refreshLayout.setOnRefreshListener {
+            recyclerView.scrollToPosition(0)
+            adapter.refresh()
+        }
 
         lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            whenStarted {
                 pagingDataFlow
                     .collectLatest { pagingData ->
                         adapter.submitData(pagingData)
@@ -109,7 +110,7 @@ class MainFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            whenStarted {
                 adapter.loadStateFlow.collect { loadState ->
                     val isListEmpty =
                         loadState.refresh is LoadState.NotLoading && adapter.itemCount == 0
@@ -119,6 +120,10 @@ class MainFragment : Fragment() {
                     loadingBar.isVisible = loadState.source.refresh is LoadState.Loading
                     retryButton.isVisible = loadState.source.refresh is LoadState.Error
                     if (loadState.source.refresh is LoadState.Error) recyclerView.isVisible = false
+
+                    if (loadState.source.refresh !is LoadState.NotLoading) {
+                        refreshLayout.isRefreshing = false
+                    }
 
                     showErrorToast(loadState)
                 }
@@ -168,7 +173,7 @@ class MainFragment : Fragment() {
             filterSpinner.adapter = adapter
         }
 
-        filterList.observe(this@MainFragment, {
+        filterList.observe(viewLifecycleOwner, Observer {
             adapter.notifyDataSetChanged()
         })
 
