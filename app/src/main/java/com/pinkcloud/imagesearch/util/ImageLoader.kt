@@ -15,39 +15,41 @@ object ImageLoader {
     lateinit var coroutineScope: CoroutineScope
 
     fun loadBitmap(url: String, imageView: ImageView, placeHolder: Drawable?) {
+        imageView.setImageDrawable(placeHolder)
+        coroutineScope.launch {
+            val bitmap = imageCache.get(url) ?: run {
+                load(url)
+            }
+            bitmap?.let {
+                imageView.setImageBitmap(it)
+            }
+        }
 //        imageCache.get(url) ?: run {
 //            load(url)
 //        }?.let { bitmap ->
 //            imageView.setImageBitmap(bitmap)
 //        }
-        val bitmap = imageCache.get(url) ?: run {
-            load(url)
-        }
-        if (bitmap != null) {
-            imageView.setImageBitmap(bitmap)
-        } else {
-            imageView.setImageDrawable(placeHolder)
-        }
+
     }
 
     fun preload(url: String) {
-        imageCache.get(url) ?: run {
-            load(url)
+        coroutineScope.launch {
+            imageCache.get(url) ?: run {
+                load(url)
+            }
         }
     }
 
-    private fun load(url: String): Bitmap? {
-        return runBlocking {
-            val deferred = coroutineScope.async(Dispatchers.IO) {
-                BitmapFactory.decodeStream(URL(url).openStream()).also { bitmap ->
-                    imageCache.put(url, bitmap)
-                }
+    private suspend fun load(url: String): Bitmap? {
+        val deferred = coroutineScope.async(Dispatchers.IO) {
+            BitmapFactory.decodeStream(URL(url).openStream()).also { bitmap ->
+                imageCache.put(url, bitmap)
             }
-            try {
-                deferred.await()
-            } catch (exception: Exception) {
-                null
-            }
+        }
+        return try {
+            deferred.await()
+        } catch (exception: Exception) {
+            null
         }
     }
 

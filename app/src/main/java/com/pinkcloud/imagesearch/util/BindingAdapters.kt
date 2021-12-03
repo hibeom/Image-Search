@@ -5,9 +5,8 @@ import android.widget.ImageView
 import androidx.databinding.BindingAdapter
 import com.pinkcloud.imagesearch.data.Image
 
-@BindingAdapter("image", "placeHolder")
+@BindingAdapter("image", "placeHolder", requireAll = false)
 fun setImage(imageView: ImageView, image: Image, placeHolder: Drawable?) {
-    // TODO run without global scope
     image.thumbnailUrl?.let { url ->
         ImageLoader.loadBitmap(url, imageView, placeHolder)
     }

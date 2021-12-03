@@ -49,7 +49,6 @@ class ImagesAdapter(
 
         for (i in position until endPosition) {
             val image = getItem(i)
-            // TODO run without global scope
             image?.thumbnailUrl?.let { url ->
                 ImageLoader.preload(url)
             }
