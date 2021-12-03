@@ -2,38 +2,52 @@ package com.pinkcloud.imagesearch.util
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.Drawable
 import android.util.Log
 import android.util.LruCache
 import android.widget.ImageView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.lang.Exception
 import java.net.URL
 
 object ImageLoader {
     private val imageCache: LruCache<String, Bitmap>
+    lateinit var coroutineScope: CoroutineScope
 
-    suspend fun loadBitmap(url: String, imageView: ImageView) {
-        imageCache.get(url) ?: run {
+    fun loadBitmap(url: String, imageView: ImageView, placeHolder: Drawable?) {
+//        imageCache.get(url) ?: run {
+//            load(url)
+//        }?.let { bitmap ->
+//            imageView.setImageBitmap(bitmap)
+//        }
+        val bitmap = imageCache.get(url) ?: run {
             load(url)
-        }?.let { bitmap ->
+        }
+        if (bitmap != null) {
             imageView.setImageBitmap(bitmap)
+        } else {
+            imageView.setImageDrawable(placeHolder)
         }
     }
 
-    suspend fun preload(url: String) {
+    fun preload(url: String) {
         imageCache.get(url) ?: run {
             load(url)
         }
     }
 
-    private suspend fun load(url: String): Bitmap? = withContext(Dispatchers.IO) {
-        try {
-            BitmapFactory.decodeStream(URL(url).openStream()).also { bitmap ->
-                imageCache.put(url, bitmap)
+    private fun load(url: String): Bitmap? {
+        return runBlocking {
+            val deferred = coroutineScope.async(Dispatchers.IO) {
+                BitmapFactory.decodeStream(URL(url).openStream()).also { bitmap ->
+                    imageCache.put(url, bitmap)
+                }
             }
-        } catch (exception: Exception) {
-            null
+            try {
+                deferred.await()
+            } catch (exception: Exception) {
+                null
+            }
         }
     }
 

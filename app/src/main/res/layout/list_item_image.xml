@@ -20,7 +20,8 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintDimensionRatio="1:1"
             android:scaleType="centerCrop"
-            app:image="@{image}"/>
+            app:image="@{image}"
+            app:placeHolder="@{@color/gray}"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
